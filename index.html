@@ -231,7 +231,7 @@
             const hoje = new Date();
             hoje.setHours(0,0,0,0);
             dataPrazo.setHours(0,0,0,0);
-            const diffDays = Math.ceil((dataPrazo - hoje) / (1000 * 60 * 60 * 24)); 
+            const diffDays = Math.ceil((dataPrazo - hoje) / (1000 * 60 * 60 * 24) + 1); 
             document.getElementById('diasRestantes').value = diffDays;
         }
     }
