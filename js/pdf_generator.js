@@ -1,38 +1,49 @@
 const { jsPDF } = window.jspdf;
 
+/* =========================================
+   1. Helpers de DOM e Formatação
+   ========================================= */
 const val = (id) => {
     const el = document.getElementById(id);
     return el ? el.value : "";
 };
+
 const isChecked = (id) => {
     const el = document.getElementById(id);
     return el ? el.checked : false;
 };
+
 const radioVal = (name, checkVal) => {
     const el = document.querySelector(`input[name="${name}"]:checked`);
     return el ? el.value === checkVal : false;
 };
+
 const radioId = (id) => {
     const el = document.getElementById(id);
     return el ? el.checked : false;
 };
 
 function formatarDataBR(dataInput) {
-    if(!dataInput) return "";
-    if(dataInput.includes('-')) {
+    if (!dataInput) return "";
+    if (dataInput.includes('-')) {
         const [ano, mes, dia] = dataInput.split('-');
         return `${dia}/${mes}/${ano}`;
     }
     return dataInput;
 }
 
-export function gerarPDFComDados(logoBase64) {
+/* =========================================
+   2. Função Principal de Geração
+   ========================================= */
+export function gerarPDFComDados(logoBase64, printInscricaoBase64) {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    
+    // Configurações Globais
     const margemEsq = 20;
     const larguraUtil = 170;
     const entrelinha = 6;
-
-    // Função para cabeçalho com logo transparente
+    
+    // Controle de Cabeçalho e Paginação
     const adicionarCabecalho = () => {
         if (logoBase64) {
             doc.setGState(new doc.GState({ opacity: 0.5 }));
@@ -44,9 +55,9 @@ export function gerarPDFComDados(logoBase64) {
     };
 
     let y = adicionarCabecalho();
-    doc.setFont("times", "normal");
 
-    // --- Funções Auxiliares de Desenho ---
+    // --- Helpers de Desenho (Escopo Local) ---
+    
     const addSection = (texto) => {
         y += 4;
         doc.setFont("times", "bold");
@@ -146,13 +157,16 @@ export function gerarPDFComDados(logoBase64) {
         doc.setFontSize(11);
     };
 
-    // --- Geração do Conteúdo ---
+    // =========================================
+    // INÍCIO DA MONTAGEM DO PDF
+    // =========================================
+
     doc.setFont("times", "bold");
     doc.setFontSize(14);
     doc.text("FORMULÁRIO DE SOLICITAÇÃO DE AUTORIZAÇÃO RECURSAL", 105, y, { align: "center" });
     y += 10;
 
-    // Seção 1
+    // --- Seção 1: Dados Básicos ---
     addSection("1. DADOS BÁSICOS DO PROCESSO");
     let cursorX = margemEsq;
     cursorX = addFieldNormal("Pasta CIV:", 50, cursorX, false, val('pasta'));
@@ -185,7 +199,7 @@ export function gerarPDFComDados(logoBase64) {
     doc.text(")", cursorX + wDias + 11, y);
     y += entrelinha;
 
-    // Seção 2
+    // --- Seção 2: Análise Específica ---
     addSection("2. ANÁLISE ESPECÍFICA DO CASO");
     doc.text("O autor comprovou a inclusão de restrição pela Ativos?: ", margemEsq, y);
     cursorX = margemEsq + doc.getTextWidth("O autor comprovou a inclusão de restrição pela Ativos?: ") + 2;
@@ -220,24 +234,69 @@ export function gerarPDFComDados(logoBase64) {
     }
     y += entrelinha * 1.5;
 
+    // --- Tratamento de Inscrições Preexistentes (Texto ou Imagem) ---
     doc.text("Há inscrições preexistentes à da Ativos que não estão sendo questionadas em juízo?", margemEsq, y);
     y += entrelinha;
+    
+    const temInscricoes = radioVal('inscricoesPre', 'sim');
+    
     cursorX = margemEsq;
-    cursorX = addCheckbox("Sim", cursorX, y, radioVal('inscricoesPre', 'sim'));
+    cursorX = addCheckbox("Sim", cursorX, y, temInscricoes);
     addCheckbox("Não", cursorX, y, radioVal('inscricoesPre', 'nao'));
     y += entrelinha;
     
-    let textoEspec = val('especificarInscricoes');
     doc.text("Se sim, especificar:", margemEsq, y);
-    doc.line(margemEsq + 35, y+1, margemEsq + 170, y+1);
-    if(textoEspec) {
-         doc.setFont("courier", "bold"); doc.setFontSize(10);
-         doc.text(textoEspec, margemEsq + 36, y);
-         doc.setFont("times", "normal"); doc.setFontSize(11);
-    }
-    y += entrelinha;
 
-    // Seção 3
+    if (temInscricoes) {
+        const modoImagem = radioVal('tipoInscricao', 'imagem');
+        
+        if (modoImagem && printInscricaoBase64) {
+            // Desenhar Imagem
+            doc.setFont("courier", "bold"); doc.setFontSize(10);
+            y += entrelinha + 2;
+
+            try {
+                const imgProps = doc.getImageProperties(printInscricaoBase64);
+                // Cálculo Proporcional (Largura Fixa = 170mm)
+                const pdfImgHeight = (imgProps.height * larguraUtil) / imgProps.width;
+
+                if (y + pdfImgHeight > 275) {
+                    doc.addPage();
+                    y = adicionarCabecalho();
+                }
+
+                doc.addImage(printInscricaoBase64, 'PNG', margemEsq, y, larguraUtil, pdfImgHeight);
+                y += pdfImgHeight + 6;
+
+            } catch (err) {
+                console.error("Erro ao desenhar imagem:", err);
+                doc.text("[ERRO AO PROCESSAR IMAGEM]", margemEsq, y);
+                y += entrelinha;
+            }
+
+        } else {
+            // Desenhar Texto
+            doc.line(margemEsq + 35, y+1, margemEsq + 170, y+1);
+            let textoFinal = val('especificarInscricoes');
+            
+            if(modoImagem && !printInscricaoBase64) textoFinal = "[IMAGEM SELECIONADA, MAS NÃO ENVIADA]";
+            if(!textoFinal) textoFinal = "NÃO INFORMADO";
+
+            doc.setFont("courier", "bold"); doc.setFontSize(10);
+            doc.text(textoFinal, margemEsq + 36, y);
+            doc.setFont("times", "normal"); doc.setFontSize(11);
+            y += entrelinha;
+        }
+
+    } else {
+        doc.line(margemEsq + 35, y+1, margemEsq + 170, y+1);
+        doc.setFont("courier", "bold"); doc.setFontSize(10);
+        doc.text("NÃO HÁ", margemEsq + 36, y);
+        doc.setFont("times", "normal"); doc.setFontSize(11);
+        y += entrelinha;
+    }
+
+    // --- Seção 3: Dados Complementares ---
     addSection("3. DADOS COMPLEMENTARES");
     doc.setFont("times", "bold");
     doc.text("Tipo de restrição realizada pela Ativos:", margemEsq, y);
@@ -264,13 +323,13 @@ export function gerarPDFComDados(logoBase64) {
     addCheckbox("Acima dos parâmetros usuais", margemEsq, y, radioId('dano2')); y += entrelinha;
     addCheckbox("Significativamente excessivo", margemEsq, y, radioId('dano3')); y += entrelinha;
 
-    // Seção 4
+    // --- Seção 4: Histórico ---
     addSection("4. HISTÓRICO DO CASO");
     doc.text("Resumo das principais alegações e fundamentos da sentença:", margemEsq, y);
     y += entrelinha;
     addLongText(val('resumo'), 30); 
 
-    // Seção 5
+    // --- Seção 5: Parecer Técnico ---
     if (y > 250) { doc.addPage(); y = adicionarCabecalho(); }
     addSection("5. PARECER TÉCNICO");
     
@@ -335,7 +394,7 @@ export function gerarPDFComDados(logoBase64) {
         y = adicionarCabecalho(); 
     }
 
-    // Seção 6
+    // --- Seção 6: Recomendação ---
     addSection("6. RECOMENDAÇÃO FINAL");
     addCheckbox("SOLICITAMOS AUTORIZAÇÃO PARA RECURSO", margemEsq, y, radioId('rec1')); y += entrelinha;
     addCheckbox("NÃO RECOMENDAMOS RECURSO", margemEsq, y, radioId('rec2')); y += entrelinha;
@@ -349,7 +408,7 @@ export function gerarPDFComDados(logoBase64) {
         y = adicionarCabecalho(); 
     }
 
-    // Seção 7
+    // --- Seção 7: Anexos ---
     addSection("7. ANEXOS OBRIGATÓRIOS NO SISTEMA ESPAIDER");
     doc.setFontSize(10);
     cursorX = margemEsq;
@@ -374,7 +433,7 @@ export function gerarPDFComDados(logoBase64) {
         y = adicionarCabecalho(); 
     }
 
-    // Seção 8
+    // --- Seção 8: Assinatura ---
     addSection("8. RESPONSABILIDADE");
     cursorX = margemEsq;
     cursorX = addField("Advogado Responsável:", 70, cursorX, false, val('advogado'));
@@ -385,7 +444,7 @@ export function gerarPDFComDados(logoBase64) {
     y += entrelinha;
     addField("Assinatura:", 100, margemEsq, true);
     
-    // Rodapé
+    // --- Rodapé de Aprovação ---
     if (y > 250) { doc.addPage(); y = adicionarCabecalho(); }
     
     y += 5;

@@ -15,40 +15,76 @@
     <form id="formRecurso">
         <h3>1. Dados Básicos do Processo</h3>
         <div class="row">
-            <div class="col"><label>Pasta CIV:</label><input type="text" id="pasta"></div>
-            <div class="col"><label>Cliente:</label><input type="text" id="cliente"></div>
+            <div class="col">
+                <label for="pasta">Pasta CIV:</label>
+                <input type="text" id="pasta">
+            </div>
+            <div class="col">
+                <label for="cliente">Cliente:</label>
+                <input type="text" id="cliente">
+            </div>
         </div>
+        
         <div class="row">
-            <div class="col"><label>Valor originário da Condenação:</label><input type="text" id="valor" placeholder="R$"></div>
-            <div class="col"><label>Verba Honorária:</label><input type="text" id="honoraria" placeholder="%"></div>
+            <div class="col">
+                <label for="valor">Valor originário da Condenação:</label>
+                <input type="text" id="valor" placeholder="R$">
+            </div>
+            <div class="col">
+                <label for="honoraria">Verba Honorária:</label>
+                <input type="text" id="honoraria" placeholder="%">
+            </div>
         </div>
+        
         <div class="row">
             <div class="col" style="flex: 0 0 auto;">
                 <label>Responsabilidade Solidária:</label>
                 <div style="display:flex; gap:15px; margin-top:8px;">
-                    <label style="font-weight:normal"><input type="radio" name="respSolidaria" value="sim"> Sim</label>
-                    <label style="font-weight:normal"><input type="radio" name="respSolidaria" value="nao"> Não</label>
+                    <label style="font-weight:normal">
+                        <input type="radio" name="respSolidaria" value="sim"> Sim
+                    </label>
+                    <label style="font-weight:normal">
+                        <input type="radio" name="respSolidaria" value="nao"> Não
+                    </label>
                 </div>
             </div>
-            <div class="col"><label>Se sim, com quem:</label><input type="text" id="comQuem"></div>
+            <div class="col">
+                <label for="comQuem">Se sim, com quem:</label>
+                <input type="text" id="comQuem">
+            </div>
         </div>
+        
         <div class="row">
-            <div class="col"><label>Valor estimado de custas recursais:</label><input type="text" id="custas" placeholder="R$"></div>
+            <div class="col">
+                <label for="custas">Valor estimado de custas recursais:</label>
+                <input type="text" id="custas" placeholder="R$">
+            </div>
         </div>
+        
         <div class="row">
-            <div class="col"><label>Prazo fatal para interpor o recurso:</label><input type="date" id="prazo"></div>
-            <div class="col"><label>Dias Restantes:</label><input type="number" id="diasRestantes" readonly style="background:#f0f0f0;"></div>
+            <div class="col">
+                <label for="prazo">Prazo fatal para interpor o recurso:</label>
+                <input type="date" id="prazo">
+            </div>
+            <div class="col">
+                <label for="diasRestantes">Dias Restantes:</label>
+                <input type="number" id="diasRestantes" readonly style="background:#f0f0f0;">
+            </div>
         </div>
 
         <h3>2. Análise Específica do Caso</h3>
         <div class="row">
             <label>O autor comprovou a inclusão de restrição pela Ativos?</label>
             <div style="margin-left: 20px; display:flex; gap:15px;">
-                <label style="font-weight:normal"><input type="radio" name="comprovouInclusao" value="sim"> Sim</label>
-                <label style="font-weight:normal"><input type="radio" name="comprovouInclusao" value="nao"> Não</label>
+                <label style="font-weight:normal">
+                    <input type="radio" name="comprovouInclusao" value="sim"> Sim
+                </label>
+                <label style="font-weight:normal">
+                    <input type="radio" name="comprovouInclusao" value="nao"> Não
+                </label>
             </div>
         </div>
-        
+
         <label>Por que razão a negativação ou cobrança foi considerada indevida?</label>
         <div class="checkbox-group">
             <label class="checkbox-item"><input type="checkbox" id="motivo1"> Ausência de documentos</label>
@@ -65,11 +101,39 @@
             <div class="col">
                 <label>Há inscrições preexistentes à da Ativos que não estão sendo questionadas em juízo?</label>
                 <div style="display:flex; gap:15px;">
-                    <label style="font-weight:normal"><input type="radio" name="inscricoesPre" value="sim"> Sim</label>
-                    <label style="font-weight:normal"><input type="radio" name="inscricoesPre" value="nao"> Não</label>
+                    <label style="font-weight:normal">
+                        <input type="radio" name="inscricoesPre" value="sim" id="inscricaoSim"> Sim
+                    </label>
+                    <label style="font-weight:normal">
+                        <input type="radio" name="inscricoesPre" value="nao" id="inscricaoNao" checked> Não
+                    </label>
                 </div>
             </div>
-            <div class="col"><label>Se sim, especificar (Padrão: NÃO HÁ):</label><input type="text" id="especificarInscricoes" value="NÃO HÁ"></div>
+
+            <div class="col hidden" id="containerEspecificar">
+                <label>Se sim, especificar:</label>
+                
+                <div class="toggle-container">
+                    <input type="radio" name="tipoInscricao" id="modoTexto" value="texto" checked>
+                    <label for="modoTexto" class="toggle-btn">Digitar Texto</label>
+                    
+                    <input type="radio" name="tipoInscricao" id="modoImagem" value="imagem">
+                    <label for="modoImagem" class="toggle-btn">Anexar Print</label>
+                </div>
+
+                <div id="areaTexto" class="input-area">
+                    <input type="text" id="especificarInscricoes" placeholder="Descreva as inscrições...">
+                </div>
+
+                <div id="areaImagem" class="input-area hidden">
+                    <div class="file-upload-wrapper">
+                        <label for="uploadPrint" class="file-upload-label">
+                            <span id="fileName">Clique para enviar o print (JPG/PNG)</span>
+                        </label>
+                        <input type="file" id="uploadPrint" accept="image/*">
+                    </div>
+                </div>
+            </div>
         </div>
 
         <h3>3. Dados Complementares</h3>
@@ -90,13 +154,13 @@
         </div>
 
         <h3>4. Histórico do Caso</h3>
-        <label>Resumo das principais alegações e fundamentos da sentença:</label>
+        <label for="resumo">Resumo das principais alegações e fundamentos da sentença:</label>
         <textarea id="resumo" rows="10" placeholder="Digite o resumo aqui... (O PDF aceitará até 30 linhas)"></textarea>
 
         <h3>5. Parecer Técnico</h3>
         <div class="row">
             <div class="col">
-                <label>Possibilidade de reversão (Mérito):</label>
+                <label for="reversao">Possibilidade de reversão (Mérito):</label>
                 <select id="reversao">
                     <option value="" disabled selected>Selecione...</option>
                     <option value="alta">Alta (>70%)</option>
@@ -105,7 +169,7 @@
                 </select>
             </div>
             <div class="col">
-                <label>Possibilidade de redução (Valor):</label>
+                <label for="reducao">Possibilidade de redução (Valor):</label>
                 <select id="reducao">
                     <option value="" disabled selected>Selecione...</option>
                     <option value="alta">Alta (>70%)</option>
@@ -135,9 +199,16 @@
         </div>
 
         <div class="row" style="margin-top:10px;">
-            <div class="col"><label>Custo total estimado do recurso (R$):</label><input type="text" id="custoTotal" placeholder="R$ 0,00"></div>
-            <div class="col"><label>Economia potencial máxima (R$):</label><input type="text" id="economia" placeholder="R$ 0,00" readonly style="background-color: #f0f0f0;"></div>
+            <div class="col">
+                <label for="custoTotal">Custo total estimado do recurso (R$):</label>
+                <input type="text" id="custoTotal" placeholder="R$ 0,00">
+            </div>
+            <div class="col">
+                <label for="economia">Economia potencial máxima (R$):</label>
+                <input type="text" id="economia" placeholder="R$ 0,00" readonly style="background-color: #f0f0f0;">
+            </div>
         </div>
+        
         <div class="col">
             <label>Relação custo-benefício:</label>
             <div style="display:flex; gap:15px; margin-top:8px;">
@@ -169,12 +240,24 @@
 
         <h3>8. Responsabilidade</h3>
         <div class="row">
-            <div class="col"><label>Advogado Responsável:</label><input type="text" id="advogado" value="MARCOS DELLI RIBEIRO RODRIGUES"></div>
-            <div class="col"><label>OAB:</label><input type="text" id="oab" value="5.553"></div>
+            <div class="col">
+                <label for="advogado">Advogado Responsável:</label>
+                <input type="text" id="advogado" value="MARCOS DELLI RIBEIRO RODRIGUES">
+            </div>
+            <div class="col">
+                <label for="oab">OAB:</label>
+                <input type="text" id="oab" value="5.553">
+            </div>
         </div>
         <div class="row">
-            <div class="col"><label>Escritório:</label><input type="text" id="escritorio" value="MDR ADVOCACIA"></div>
-            <div class="col"><label>Data:</label><input type="date" id="dataAssinatura"></div>
+            <div class="col">
+                <label for="escritorio">Escritório:</label>
+                <input type="text" id="escritorio" value="MDR ADVOCACIA">
+            </div>
+            <div class="col">
+                <label for="dataAssinatura">Data:</label>
+                <input type="date" id="dataAssinatura">
+            </div>
         </div>
 
         <button type="button" id="btnGerarPDF">GERAR PDF PREENCHIDO</button>
@@ -182,8 +265,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <script type="module" src="js/main.js"></script>
+<script type="module" src="js/main.js"></script>
 
 </body>
 </html>
