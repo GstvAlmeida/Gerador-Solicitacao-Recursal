@@ -200,6 +200,7 @@ export function gerarPDFComDados(logoBase64, printInscricaoBase64) {
     y += entrelinha;
 
     // --- Seção 2: Análise Específica ---
+    if (y > 250) { doc.addPage(); y = adicionarCabecalho(); }
     addSection("2. ANÁLISE ESPECÍFICA DO CASO");
     doc.text("O autor comprovou a inclusão de restrição pela Ativos?: ", margemEsq, y);
     cursorX = margemEsq + doc.getTextWidth("O autor comprovou a inclusão de restrição pela Ativos?: ") + 2;
@@ -297,6 +298,7 @@ export function gerarPDFComDados(logoBase64, printInscricaoBase64) {
     }
 
     // --- Seção 3: Dados Complementares ---
+    if (y > 250) { doc.addPage(); y = adicionarCabecalho(); }
     addSection("3. DADOS COMPLEMENTARES");
     doc.setFont("times", "bold");
     doc.text("Tipo de restrição realizada pela Ativos:", margemEsq, y);
@@ -324,6 +326,7 @@ export function gerarPDFComDados(logoBase64, printInscricaoBase64) {
     addCheckbox("Significativamente excessivo", margemEsq, y, radioId('dano3')); y += entrelinha;
 
     // --- Seção 4: Histórico ---
+    if (y > 250) { doc.addPage(); y = adicionarCabecalho(); }
     addSection("4. HISTÓRICO DO CASO");
     doc.text("Resumo das principais alegações e fundamentos da sentença:", margemEsq, y);
     y += entrelinha;
